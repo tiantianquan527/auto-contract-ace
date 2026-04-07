@@ -1,8 +1,10 @@
 import { useState, useCallback } from "react";
-import { Upload, FileText, X, Loader2, Shield, FileEdit } from "lucide-react";
+import { Upload, FileText, X, Shield, FileEdit, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -18,12 +20,22 @@ interface ContractUploadProps {
 
 type Stance = "neutral" | "partyA" | "partyB";
 
+const promptTags = [
+  "重点审查违约金比例",
+  "关注管辖权条款",
+  "检查知识产权归属",
+  "是否有无限连带责任",
+  "审查保密期限合理性",
+  "关注竞业限制补偿",
+];
+
 const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [stance, setStance] = useState<Stance>("partyA");
   const [negotiationPosition, setNegotiationPosition] = useState("equal");
   const [customRules, setCustomRules] = useState("");
+  const [companyName, setCompanyName] = useState("");
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -37,6 +49,13 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
   };
 
   const removeFile = () => setFile(null);
+
+  const addTag = (tag: string) => {
+    const bracket = `[${tag}]`;
+    if (!customRules.includes(bracket)) {
+      setCustomRules((prev) => (prev ? `${prev} ${bracket}` : bracket));
+    }
+  };
 
   const stanceOptions: { value: Stance; label: string }[] = [
     { value: "neutral", label: "中立" },
@@ -113,6 +132,20 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
         </div>
       </Card>
 
+      {/* 我方主体名称 */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Building2 className="w-4 h-4" />
+          <label className="text-sm font-medium">我方主体名称</label>
+        </div>
+        <Input
+          value={companyName}
+          onChange={(e) => setCompanyName(e.target.value)}
+          placeholder="请输入我方主体名称，例如：XX科技有限公司"
+          className="bg-card border-border"
+        />
+      </div>
+
       {/* 审核立场 & 谈判地位 */}
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">
@@ -161,6 +194,18 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
           placeholder="输入特定审查规则，例如：'重点关注赔偿限额'..."
           className="bg-card border-border min-h-[100px] resize-none"
         />
+        <div className="flex flex-wrap gap-2">
+          {promptTags.map((tag) => (
+            <Badge
+              key={tag}
+              variant="outline"
+              className="cursor-pointer hover:bg-primary/10 hover:border-primary/40 transition-colors text-xs px-2.5 py-1"
+              onClick={() => addTag(tag)}
+            >
+              + {tag}
+            </Badge>
+          ))}
+        </div>
       </div>
 
       <Button
@@ -168,17 +213,8 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
         disabled={!file || isReviewing}
         onClick={() => file && onReview(file)}
       >
-        {isReviewing ? (
-          <>
-            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-            正在审核中...
-          </>
-        ) : (
-          <>
-            <Shield className="w-5 h-5 mr-2" />
-            一键审核
-          </>
-        )}
+        <Shield className="w-5 h-5 mr-2" />
+        一键审核
       </Button>
 
       <div className="grid grid-cols-3 gap-4">

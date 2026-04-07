@@ -1,30 +1,36 @@
 import { useState } from "react";
 import { ContractReview } from "@/types/contract";
-import { CheckCircle2, RefreshCw, Download, AlertTriangle, FileText } from "lucide-react";
+import { CheckCircle2, RefreshCw, Download, AlertTriangle, AlertCircle, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SplitScreenReview from "./SplitScreenReview";
 
 interface ReviewResultProps {
   review: ContractReview;
   onBack: () => void;
 }
 
+const riskConfig = {
+  high: { color: "text-risk-high", bg: "bg-risk-high/10", border: "border-risk-high/30", icon: AlertCircle, label: "🔴 高危风险", badgeBg: "bg-risk-high/10 text-risk-high border-risk-high/30" },
+  medium: { color: "text-risk-medium", bg: "bg-risk-medium/10", border: "border-risk-medium/30", icon: AlertTriangle, label: "🟡 中度风险", badgeBg: "bg-risk-medium/10 text-risk-medium border-risk-medium/30" },
+  low: { color: "text-risk-low", bg: "bg-risk-low/10", border: "border-risk-low/30", icon: Info, label: "🟢 文本瑕疵", badgeBg: "bg-risk-low/10 text-risk-low border-risk-low/30" },
+};
+
 const ReviewResult = ({ review, onBack }: ReviewResultProps) => {
   const totalIssues = review.clauses.length;
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
     new Set(review.clauses.map((c) => c.id))
   );
+  const [activeClauseId, setActiveClauseId] = useState<string | null>(null);
 
   const allSelected = selectedIds.size === totalIssues;
 
   const toggleAll = () => {
-    if (allSelected) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(review.clauses.map((c) => c.id)));
-    }
+    if (allSelected) setSelectedIds(new Set());
+    else setSelectedIds(new Set(review.clauses.map((c) => c.id)));
   };
 
   const toggleOne = (id: string) => {
@@ -34,9 +40,14 @@ const ReviewResult = ({ review, onBack }: ReviewResultProps) => {
     setSelectedIds(next);
   };
 
+  // Group by risk
+  const highClauses = review.clauses.filter((c) => c.riskLevel === "high");
+  const mediumClauses = review.clauses.filter((c) => c.riskLevel === "medium");
+  const lowClauses = review.clauses.filter((c) => c.riskLevel === "low");
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header: 审查完成 */}
+    <div className="max-w-5xl mx-auto space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex-1" />
         <div className="flex flex-col items-center gap-2">
@@ -51,15 +62,28 @@ const ReviewResult = ({ review, onBack }: ReviewResultProps) => {
         </div>
       </div>
 
-      {/* File info */}
-      <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-        <span className="px-3 py-1 rounded-full bg-secondary text-secondary-foreground">
-          {review.fileName}
-        </span>
-        <span>·</span>
-        <span>
-          共发现 <strong className="text-foreground">{totalIssues}</strong> 个问题
-        </span>
+      {/* File info + risk summary */}
+      <div className="flex flex-col items-center gap-3">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span className="px-3 py-1 rounded-full bg-secondary text-secondary-foreground">
+            {review.fileName}
+          </span>
+          <span>·</span>
+          <span>
+            共发现 <strong className="text-foreground">{totalIssues}</strong> 个问题
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          <Badge variant="outline" className={riskConfig.high.badgeBg}>
+            🔴 高危 {highClauses.length}
+          </Badge>
+          <Badge variant="outline" className={riskConfig.medium.badgeBg}>
+            🟡 中度 {mediumClauses.length}
+          </Badge>
+          <Badge variant="outline" className={riskConfig.low.badgeBg}>
+            🟢 瑕疵 {lowClauses.length}
+          </Badge>
+        </div>
       </div>
 
       {/* Download buttons */}
@@ -81,59 +105,95 @@ const ReviewResult = ({ review, onBack }: ReviewResultProps) => {
         </Card>
       </div>
 
-      {/* 审查详情 header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-foreground">审查详情</h2>
-        <div className="flex items-center gap-2">
-          <Checkbox
-            checked={allSelected}
-            onCheckedChange={toggleAll}
-            className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-          />
-          <span className="text-sm text-muted-foreground">
-            全选 ({selectedIds.size}/{totalIssues})
-          </span>
+      {/* Tabs: list view vs split screen */}
+      <Tabs defaultValue="split" className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-foreground">审查详情</h2>
+          <TabsList className="bg-muted">
+            <TabsTrigger value="split" className="text-xs">分屏对照</TabsTrigger>
+            <TabsTrigger value="list" className="text-xs">列表视图</TabsTrigger>
+          </TabsList>
         </div>
-      </div>
 
-      {/* Clause list */}
-      <div className="space-y-4">
-        {review.clauses.map((clause, index) => (
-          <Card key={clause.id} className="bg-card border border-border p-5 space-y-4">
-            {/* Top row */}
-            <div className="flex items-center gap-3">
-              <Checkbox
-                checked={selectedIds.has(clause.id)}
-                onCheckedChange={() => toggleOne(clause.id)}
-                className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-              />
-              <span className="text-sm text-muted-foreground font-medium">#{index + 1}</span>
-              <Badge className="bg-primary/10 text-primary border-transparent text-xs">
-                建议修改
-              </Badge>
-            </div>
+        <TabsContent value="split" className="mt-0">
+          <SplitScreenReview
+            clauses={review.clauses}
+            activeClauseId={activeClauseId}
+            onClauseClick={setActiveClauseId}
+          />
+        </TabsContent>
 
-            {/* Original text */}
-            <div className="border-l-2 border-muted pl-4">
-              <p className="text-sm text-muted-foreground leading-relaxed">{clause.originalText}</p>
-            </div>
+        <TabsContent value="list" className="mt-0 space-y-4">
+          {/* Select all */}
+          <div className="flex items-center justify-end gap-2">
+            <Checkbox
+              checked={allSelected}
+              onCheckedChange={toggleAll}
+              className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+            />
+            <span className="text-sm text-muted-foreground">
+              全选 ({selectedIds.size}/{totalIssues})
+            </span>
+          </div>
 
-            {/* Suggested text */}
-            <div>
-              <p className="text-sm text-foreground leading-relaxed">
-                <span className="text-primary font-medium">建议：</span>
-                <span className="font-medium">{clause.suggestedText}</span>
-              </p>
-            </div>
+          {/* Grouped by risk */}
+          {[
+            { level: "high" as const, items: highClauses },
+            { level: "medium" as const, items: mediumClauses },
+            { level: "low" as const, items: lowClauses },
+          ]
+            .filter((g) => g.items.length > 0)
+            .map(({ level, items }) => {
+              const risk = riskConfig[level];
+              const RiskIcon = risk.icon;
+              return (
+                <div key={level} className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold">{risk.label}</span>
+                    <Badge variant="outline" className={`text-xs ${risk.badgeBg}`}>
+                      {items.length}
+                    </Badge>
+                  </div>
+                  {items.map((clause, idx) => (
+                    <Card key={clause.id} className={`bg-card border p-5 space-y-4 ${risk.border}`}>
+                      <div className="flex items-center gap-3">
+                        <Checkbox
+                          checked={selectedIds.has(clause.id)}
+                          onCheckedChange={() => toggleOne(clause.id)}
+                          className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                        />
+                        <span className="text-sm text-muted-foreground font-medium">
+                          {clause.title}
+                        </span>
+                        <Badge className={`border-transparent text-xs ${risk.badgeBg}`}>
+                          {risk.label}
+                        </Badge>
+                      </div>
 
-            {/* Reason */}
-            <div className="flex items-start gap-2 text-sm text-muted-foreground">
-              <AlertTriangle className="w-4 h-4 text-risk-medium flex-shrink-0 mt-0.5" />
-              <p className="leading-relaxed">{clause.reason}</p>
-            </div>
-          </Card>
-        ))}
-      </div>
+                      <div className="border-l-2 border-muted pl-4">
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {clause.originalText}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-sm text-foreground leading-relaxed">
+                          <span className="text-primary font-medium">建议：</span>
+                          <span className="font-medium">{clause.suggestedText}</span>
+                        </p>
+                      </div>
+
+                      <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <RiskIcon className={`w-4 h-4 ${risk.color} flex-shrink-0 mt-0.5`} />
+                        <p className="leading-relaxed">{clause.reason}</p>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              );
+            })}
+        </TabsContent>
+      </Tabs>
 
       {/* Disclaimer */}
       <div className="text-center py-4">
