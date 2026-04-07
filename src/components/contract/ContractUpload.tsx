@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Upload, FileText, X, Shield, FileEdit, Building2 } from "lucide-react";
+import { Upload, FileText, X, Shield, FileEdit, Building2, Plus, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,6 +36,10 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
   const [negotiationPosition, setNegotiationPosition] = useState("equal");
   const [customRules, setCustomRules] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [tags, setTags] = useState<string[]>([...promptTags]);
+  const [newTagInput, setNewTagInput] = useState("");
+  const [showTagInput, setShowTagInput] = useState(false);
+  const [activeTags, setActiveTags] = useState<Set<string>>(new Set());
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -50,11 +54,34 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
 
   const removeFile = () => setFile(null);
 
-  const addTag = (tag: string) => {
+  const toggleTag = (tag: string) => {
     const bracket = `[${tag}]`;
-    if (!customRules.includes(bracket)) {
-      setCustomRules((prev) => (prev ? `${prev} ${bracket}` : bracket));
+    setActiveTags((prev) => {
+      const next = new Set(prev);
+      if (next.has(tag)) {
+        next.delete(tag);
+        setCustomRules((r) => r.replace(bracket, "").replace(/\s{2,}/g, " ").trim());
+      } else {
+        next.add(tag);
+        setCustomRules((r) => (r ? `${r} ${bracket}` : bracket));
+      }
+      return next;
+    });
+  };
+
+  const addCustomTag = () => {
+    const trimmed = newTagInput.trim();
+    if (trimmed && !tags.includes(trimmed)) {
+      setTags((prev) => [...prev, trimmed]);
+      toggleTag(trimmed);
     }
+    setNewTagInput("");
+    setShowTagInput(false);
+  };
+
+  const removeTag = (tag: string) => {
+    if (activeTags.has(tag)) toggleTag(tag);
+    setTags((prev) => prev.filter((t) => t !== tag));
   };
 
   const stanceOptions: { value: Stance; label: string }[] = [
@@ -194,17 +221,63 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
           placeholder="输入特定审查规则，例如：'重点关注赔偿限额'..."
           className="bg-card border-border min-h-[100px] resize-none"
         />
-        <div className="flex flex-wrap gap-2">
-          {promptTags.map((tag) => (
-            <Badge
-              key={tag}
-              variant="outline"
-              className="cursor-pointer hover:bg-primary/10 hover:border-primary/40 transition-colors text-xs px-2.5 py-1"
-              onClick={() => addTag(tag)}
-            >
-              + {tag}
-            </Badge>
-          ))}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Tag className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">快捷标签库（点击添加/移除）</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {tags.map((tag) => (
+              <Badge
+                key={tag}
+                variant={activeTags.has(tag) ? "default" : "outline"}
+                className={`cursor-pointer transition-all text-xs px-2.5 py-1 group ${
+                  activeTags.has(tag)
+                    ? "gradient-primary text-primary-foreground"
+                    : "hover:bg-primary/10 hover:border-primary/40"
+                }`}
+                onClick={() => toggleTag(tag)}
+              >
+                {activeTags.has(tag) ? "✓ " : "+ "}
+                {tag}
+                {!promptTags.includes(tag) && (
+                  <button
+                    className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => { e.stopPropagation(); removeTag(tag); }}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </Badge>
+            ))}
+            {showTagInput ? (
+              <div className="flex items-center gap-1">
+                <Input
+                  value={newTagInput}
+                  onChange={(e) => setNewTagInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addCustomTag()}
+                  placeholder="输入标签名..."
+                  className="h-7 w-36 text-xs bg-card border-border"
+                  autoFocus
+                />
+                <Button size="sm" variant="ghost" className="h-7 px-2" onClick={addCustomTag}>
+                  确定
+                </Button>
+                <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => { setShowTagInput(false); setNewTagInput(""); }}>
+                  取消
+                </Button>
+              </div>
+            ) : (
+              <Badge
+                variant="outline"
+                className="cursor-pointer border-dashed hover:bg-primary/10 hover:border-primary/40 transition-colors text-xs px-2.5 py-1"
+                onClick={() => setShowTagInput(true)}
+              >
+                <Plus className="w-3 h-3 mr-1" />
+                自定义标签
+              </Badge>
+            )}
+          </div>
         </div>
       </div>
 
