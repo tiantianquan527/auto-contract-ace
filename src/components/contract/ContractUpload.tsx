@@ -1,16 +1,29 @@
 import { useState, useCallback } from "react";
-import { Upload, FileText, X, Loader2, Shield } from "lucide-react";
+import { Upload, FileText, X, Loader2, Shield, FileEdit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ContractUploadProps {
   onReview: (file: File) => void;
   isReviewing: boolean;
 }
 
+type Stance = "neutral" | "partyA" | "partyB";
+
 const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [stance, setStance] = useState<Stance>("partyA");
+  const [negotiationPosition, setNegotiationPosition] = useState("equal");
+  const [customRules, setCustomRules] = useState("");
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -24,6 +37,12 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
   };
 
   const removeFile = () => setFile(null);
+
+  const stanceOptions: { value: Stance; label: string }[] = [
+    { value: "neutral", label: "中立" },
+    { value: "partyA", label: "甲方" },
+    { value: "partyB", label: "乙方" },
+  ];
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -93,6 +112,56 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
           )}
         </div>
       </Card>
+
+      {/* 审核立场 & 谈判地位 */}
+      <div className="grid grid-cols-2 gap-6">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-muted-foreground">审核立场</label>
+          <div className="flex rounded-lg border border-border overflow-hidden">
+            {stanceOptions.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setStance(opt.value)}
+                className={`flex-1 py-2.5 text-sm font-medium transition-all ${
+                  stance === opt.value
+                    ? "gradient-primary text-primary-foreground"
+                    : "bg-card text-muted-foreground hover:text-foreground hover:bg-accent"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-muted-foreground">谈判地位</label>
+          <Select value={negotiationPosition} onValueChange={setNegotiationPosition}>
+            <SelectTrigger className="bg-card border-border">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="equal">平等地位</SelectItem>
+              <SelectItem value="partyA-advantage">甲方占优</SelectItem>
+              <SelectItem value="partyB-advantage">乙方占优</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* 高级：自定义审查规则 */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <FileEdit className="w-4 h-4" />
+          <span className="text-sm font-medium">高级：自定义审查规则</span>
+        </div>
+        <Textarea
+          value={customRules}
+          onChange={(e) => setCustomRules(e.target.value)}
+          placeholder="输入特定审查规则，例如：'重点关注赔偿限额'..."
+          className="bg-card border-border min-h-[100px] resize-none"
+        />
+      </div>
 
       <Button
         className="w-full h-12 text-base font-semibold gradient-primary text-primary-foreground hover:opacity-90 transition-opacity"
