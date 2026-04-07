@@ -36,6 +36,10 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
   const [negotiationPosition, setNegotiationPosition] = useState("equal");
   const [customRules, setCustomRules] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [tags, setTags] = useState<string[]>([...promptTags]);
+  const [newTagInput, setNewTagInput] = useState("");
+  const [showTagInput, setShowTagInput] = useState(false);
+  const [activeTags, setActiveTags] = useState<Set<string>>(new Set());
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
