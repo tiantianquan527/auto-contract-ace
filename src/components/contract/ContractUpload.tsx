@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Upload, FileText, X, Shield, FileEdit, Building2 } from "lucide-react";
+import { Upload, FileText, X, Shield, FileEdit, Building2, Plus, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
