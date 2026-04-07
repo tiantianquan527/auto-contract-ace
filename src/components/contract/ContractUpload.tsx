@@ -221,17 +221,63 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
           placeholder="输入特定审查规则，例如：'重点关注赔偿限额'..."
           className="bg-card border-border min-h-[100px] resize-none"
         />
-        <div className="flex flex-wrap gap-2">
-          {promptTags.map((tag) => (
-            <Badge
-              key={tag}
-              variant="outline"
-              className="cursor-pointer hover:bg-primary/10 hover:border-primary/40 transition-colors text-xs px-2.5 py-1"
-              onClick={() => addTag(tag)}
-            >
-              + {tag}
-            </Badge>
-          ))}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Tag className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">快捷标签库（点击添加/移除）</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {tags.map((tag) => (
+              <Badge
+                key={tag}
+                variant={activeTags.has(tag) ? "default" : "outline"}
+                className={`cursor-pointer transition-all text-xs px-2.5 py-1 group ${
+                  activeTags.has(tag)
+                    ? "gradient-primary text-primary-foreground"
+                    : "hover:bg-primary/10 hover:border-primary/40"
+                }`}
+                onClick={() => toggleTag(tag)}
+              >
+                {activeTags.has(tag) ? "✓ " : "+ "}
+                {tag}
+                {!promptTags.includes(tag) && (
+                  <button
+                    className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => { e.stopPropagation(); removeTag(tag); }}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </Badge>
+            ))}
+            {showTagInput ? (
+              <div className="flex items-center gap-1">
+                <Input
+                  value={newTagInput}
+                  onChange={(e) => setNewTagInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addCustomTag()}
+                  placeholder="输入标签名..."
+                  className="h-7 w-36 text-xs bg-card border-border"
+                  autoFocus
+                />
+                <Button size="sm" variant="ghost" className="h-7 px-2" onClick={addCustomTag}>
+                  确定
+                </Button>
+                <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => { setShowTagInput(false); setNewTagInput(""); }}>
+                  取消
+                </Button>
+              </div>
+            ) : (
+              <Badge
+                variant="outline"
+                className="cursor-pointer border-dashed hover:bg-primary/10 hover:border-primary/40 transition-colors text-xs px-2.5 py-1"
+                onClick={() => setShowTagInput(true)}
+              >
+                <Plus className="w-3 h-3 mr-1" />
+                自定义标签
+              </Badge>
+            )}
+          </div>
         </div>
       </div>
 
