@@ -221,7 +221,7 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
           placeholder="输入特定审查规则，例如：'重点关注赔偿限额'..."
           className="bg-card border-border min-h-[100px] resize-none"
         />
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Tag className="w-3.5 h-3.5 text-muted-foreground" />
             <span className="text-xs text-muted-foreground">快捷标签库（点击添加/移除）</span>
