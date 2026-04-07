@@ -54,11 +54,34 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
 
   const removeFile = () => setFile(null);
 
-  const addTag = (tag: string) => {
+  const toggleTag = (tag: string) => {
     const bracket = `[${tag}]`;
-    if (!customRules.includes(bracket)) {
-      setCustomRules((prev) => (prev ? `${prev} ${bracket}` : bracket));
+    setActiveTags((prev) => {
+      const next = new Set(prev);
+      if (next.has(tag)) {
+        next.delete(tag);
+        setCustomRules((r) => r.replace(bracket, "").replace(/\s{2,}/g, " ").trim());
+      } else {
+        next.add(tag);
+        setCustomRules((r) => (r ? `${r} ${bracket}` : bracket));
+      }
+      return next;
+    });
+  };
+
+  const addCustomTag = () => {
+    const trimmed = newTagInput.trim();
+    if (trimmed && !tags.includes(trimmed)) {
+      setTags((prev) => [...prev, trimmed]);
+      toggleTag(trimmed);
     }
+    setNewTagInput("");
+    setShowTagInput(false);
+  };
+
+  const removeTag = (tag: string) => {
+    if (activeTags.has(tag)) toggleTag(tag);
+    setTags((prev) => prev.filter((t) => t !== tag));
   };
 
   const stanceOptions: { value: Stance; label: string }[] = [
