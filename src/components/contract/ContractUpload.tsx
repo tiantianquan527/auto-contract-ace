@@ -13,8 +13,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+interface ReviewConfig {
+  stance: string;
+  negotiationPosition: string;
+  companyName: string;
+  customRules: string;
+}
+
 interface ContractUploadProps {
-  onReview: (file: File) => void;
+  onReview: (file: File, config: ReviewConfig) => void;
   isReviewing: boolean;
 }
 
@@ -284,7 +291,7 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
       <Button
         className="w-full h-12 text-base font-semibold gradient-primary text-primary-foreground hover:opacity-90 transition-opacity"
         disabled={!file || isReviewing}
-        onClick={() => file && onReview(file)}
+        onClick={() => file && onReview(file, { stance, negotiationPosition, companyName, customRules })}
       >
         <Shield className="w-5 h-5 mr-2" />
         一键审核

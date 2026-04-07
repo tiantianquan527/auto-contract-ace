@@ -10,22 +10,26 @@ const steps = [
   { label: "正在生成风险清单", percent: 95, icon: ClipboardList },
 ];
 
-const ReviewProgress = () => {
-  const [currentStep, setCurrentStep] = useState(0);
+interface ReviewProgressProps {
+  currentStep?: number;
+}
+
+const ReviewProgress = ({ currentStep: externalStep }: ReviewProgressProps) => {
+  const [internalStep, setInternalStep] = useState(0);
+  const currentStep = externalStep ?? internalStep;
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    // Animate through steps
-    const stepDuration = 2500 / steps.length; // total ~2.5s
+    if (externalStep !== undefined) return;
+    const stepDuration = 2500 / steps.length;
     const interval = setInterval(() => {
-      setCurrentStep((prev) => {
+      setInternalStep((prev) => {
         if (prev < steps.length - 1) return prev + 1;
         return prev;
       });
     }, stepDuration);
-
     return () => clearInterval(interval);
-  }, []);
+  }, [externalStep]);
 
   useEffect(() => {
     const target = steps[currentStep].percent;
