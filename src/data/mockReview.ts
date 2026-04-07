@@ -49,7 +49,7 @@ export const mockReview: ContractReview = {
       category: "薪酬福利",
       originalText: "工资每月15日发放，遇节假日顺延。",
       suggestedText: "工资每月15日发放，遇节假日提前至最近工作日发放。如遇特殊情况需延迟发放，应提前通知员工并说明原因，延迟不超过5个工作日。",
-      reason: "建议将"顺延"改为"提前"发放，更符合劳动者利益保护原则。同时建议增加延迟发放的上限规定。",
+      reason: "建议将「顺延」改为「提前」发放，更符合劳动者利益保护原则。同时建议增加延迟发放的上限规定。",
       riskLevel: "medium",
     },
     {
