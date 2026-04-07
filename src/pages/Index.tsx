@@ -3,20 +3,38 @@ import ContractUpload from "@/components/contract/ContractUpload";
 import ReviewProgress from "@/components/contract/ReviewProgress";
 import ReviewResult from "@/components/contract/ReviewResult";
 import { ContractReview } from "@/types/contract";
-import { mockReview } from "@/data/mockReview";
+import { uploadAndReviewContract } from "@/lib/contractReview";
+import { toast } from "sonner";
 
 type PageState = "upload" | "reviewing" | "result";
+
+interface ReviewConfig {
+  stance: string;
+  negotiationPosition: string;
+  companyName: string;
+  customRules: string;
+}
 
 const Index = () => {
   const [pageState, setPageState] = useState<PageState>("upload");
   const [review, setReview] = useState<ContractReview | null>(null);
+  const [progressStep, setProgressStep] = useState(0);
 
-  const handleReview = (_file: File) => {
+  const handleReview = async (file: File, config: ReviewConfig) => {
     setPageState("reviewing");
-    setTimeout(() => {
-      setReview({ ...mockReview, fileName: _file.name });
+    setProgressStep(0);
+
+    try {
+      const result = await uploadAndReviewContract(file, config, (step) => {
+        setProgressStep(step);
+      });
+      setReview(result);
       setPageState("result");
-    }, 3000);
+    } catch (err: any) {
+      console.error("Review failed:", err);
+      toast.error(err.message || "合同审核失败，请稍后重试");
+      setPageState("upload");
+    }
   };
 
   return (
@@ -36,7 +54,7 @@ const Index = () => {
         {pageState === "result" && review ? (
           <ReviewResult review={review} onBack={() => { setReview(null); setPageState("upload"); }} />
         ) : pageState === "reviewing" ? (
-          <ReviewProgress />
+          <ReviewProgress currentStep={progressStep} />
         ) : (
           <ContractUpload onReview={handleReview} isReviewing={false} />
         )}
