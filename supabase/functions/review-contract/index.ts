@@ -13,15 +13,46 @@ serve(async (req) => {
   }
 
   try {
-    const { filePath, stance, negotiationPosition, companyName, customRules } =
-      await req.json();
-
-    if (!filePath) {
+    // Validate JWT - ensure user is authenticated
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return new Response(
-        JSON.stringify({ error: "filePath is required" }),
+        JSON.stringify({ error: "Authentication required" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user }, error: authError } = await authClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired token" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const body = await req.json();
+    const filePath = typeof body.filePath === "string" ? body.filePath.trim() : "";
+    const stance = typeof body.stance === "string" ? body.stance.slice(0, 50) : "neutral";
+    const negotiationPosition = typeof body.negotiationPosition === "string" ? body.negotiationPosition.slice(0, 50) : "equal";
+    const companyName = typeof body.companyName === "string" ? body.companyName.slice(0, 200) : "";
+    const customRules = typeof body.customRules === "string" ? body.customRules.slice(0, 2000) : "";
+
+    if (!filePath || filePath.length > 500) {
+      return new Response(
+        JSON.stringify({ error: "filePath is required and must be under 500 characters" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    const allowedStances = ["neutral", "partyA", "partyB"];
+    const allowedPositions = ["equal", "partyA-advantage", "partyB-advantage"];
+    const safeStance = allowedStances.includes(stance) ? stance : "neutral";
+    const safePosition = allowedPositions.includes(negotiationPosition) ? negotiationPosition : "equal";
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
