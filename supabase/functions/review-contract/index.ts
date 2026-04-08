@@ -194,8 +194,7 @@ ${customRules ? `额外审查要求：${customRules}` : ""}
     });
   } catch (e) {
     console.error("review-contract error:", e);
-    const msg = e instanceof Error ? e.message : "Unknown error";
-    return new Response(JSON.stringify({ error: msg }), {
+    return new Response(JSON.stringify({ error: "服务内部错误，请稍后重试" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
