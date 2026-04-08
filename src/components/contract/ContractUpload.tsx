@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface ReviewConfig {
   stance: string;
@@ -27,22 +28,24 @@ interface ContractUploadProps {
 
 type Stance = "neutral" | "partyA" | "partyB";
 
-const promptTags = [
-  "重点审查违约金比例",
-  "关注管辖权条款",
-  "检查知识产权归属",
-  "是否有无限连带责任",
-  "审查保密期限合理性",
-  "关注竞业限制补偿",
-];
-
 const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
+  const { t } = useLanguage();
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [stance, setStance] = useState<Stance>("partyA");
   const [negotiationPosition, setNegotiationPosition] = useState("equal");
   const [customRules, setCustomRules] = useState("");
   const [companyName, setCompanyName] = useState("");
+
+  const promptTags = [
+    t("tag.penaltyRatio"),
+    t("tag.jurisdiction"),
+    t("tag.ipOwnership"),
+    t("tag.unlimitedLiability"),
+    t("tag.confidentialityPeriod"),
+    t("tag.nonCompeteCompensation"),
+  ];
+
   const [tags, setTags] = useState<string[]>([...promptTags]);
   const [newTagInput, setNewTagInput] = useState("");
   const [showTagInput, setShowTagInput] = useState(false);
@@ -91,10 +94,10 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
     setTags((prev) => prev.filter((t) => t !== tag));
   };
 
-  const stanceOptions: { value: Stance; label: string }[] = [
-    { value: "neutral", label: "中立" },
-    { value: "partyA", label: "甲方" },
-    { value: "partyB", label: "乙方" },
+  const stanceOptions: { value: Stance; labelKey: "upload.stance.neutral" | "upload.stance.partyA" | "upload.stance.partyB" }[] = [
+    { value: "neutral", labelKey: "upload.stance.neutral" },
+    { value: "partyA", labelKey: "upload.stance.partyA" },
+    { value: "partyB", labelKey: "upload.stance.partyB" },
   ];
 
   return (
@@ -102,12 +105,10 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
       <div className="text-center space-y-3">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary">
           <Shield className="w-4 h-4 text-primary" />
-          <span className="text-sm font-medium text-secondary-foreground">AI 智能合同审核</span>
+          <span className="text-sm font-medium text-secondary-foreground">{t("upload.tagline")}</span>
         </div>
-        <h1 className="text-3xl font-bold text-foreground">一键审核</h1>
-        <p className="text-muted-foreground">
-          上传合同文件，AI 将自动识别风险条款并提供修改建议
-        </p>
+        <h1 className="text-3xl font-bold text-foreground">{t("upload.title")}</h1>
+        <p className="text-muted-foreground">{t("upload.subtitle")}</p>
       </div>
 
       <Card
@@ -123,14 +124,7 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
         onDrop={handleDrop}
         onClick={() => !file && document.getElementById("file-input")?.click()}
       >
-        <input
-          id="file-input"
-          type="file"
-          accept=".pdf,.doc,.docx,.txt"
-          className="hidden"
-          onChange={handleFileChange}
-        />
-
+        <input id="file-input" type="file" accept=".pdf,.doc,.docx,.txt" className="hidden" onChange={handleFileChange} />
         <div className="p-10 flex flex-col items-center gap-4">
           {file ? (
             <div className="flex items-center gap-4 w-full">
@@ -139,14 +133,9 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-foreground truncate">{file.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {(file.size / 1024 / 1024).toFixed(2)} MB
-                </p>
+                <p className="text-sm text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
               </div>
-              <button
-                onClick={(e) => { e.stopPropagation(); removeFile(); }}
-                className="p-2 rounded-lg hover:bg-muted transition-colors"
-              >
+              <button onClick={(e) => { e.stopPropagation(); removeFile(); }} className="p-2 rounded-lg hover:bg-muted transition-colors">
                 <X className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>
@@ -156,43 +145,38 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
                 <Upload className="w-7 h-7 text-primary-foreground" />
               </div>
               <div className="text-center">
-                <p className="font-medium text-foreground">拖拽文件到此处或点击上传</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  支持 PDF、Word、TXT 格式，最大 20MB
-                </p>
+                <p className="font-medium text-foreground">{t("upload.dropzone")}</p>
+                <p className="text-sm text-muted-foreground mt-1">{t("upload.formats")}</p>
               </div>
             </>
           )}
         </div>
       </Card>
 
-      {/* 安全声明 */}
       <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground flex-wrap">
-        <span className="flex items-center gap-1">🔒 企业级加密传输</span>
+        <span className="flex items-center gap-1">{t("upload.security.encryption")}</span>
         <span className="text-border">|</span>
-        <span>承诺不使用您的文件训练模型</span>
+        <span>{t("upload.security.noTraining")}</span>
         <span className="text-border">|</span>
-        <span>阅后即焚</span>
+        <span>{t("upload.security.ephemeral")}</span>
       </div>
 
-      {/* 我方主体名称 */}
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-muted-foreground">
           <Building2 className="w-4 h-4" />
-          <label className="text-sm font-medium">我方主体名称</label>
+          <label className="text-sm font-medium">{t("upload.companyLabel")}</label>
         </div>
         <Input
           value={companyName}
           onChange={(e) => setCompanyName(e.target.value)}
-          placeholder="请输入我方主体名称，例如：XX科技有限公司"
+          placeholder={t("upload.companyPlaceholder")}
           className="bg-card border-border"
         />
       </div>
 
-      {/* 审核立场 & 谈判地位 */}
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">审核立场</label>
+          <label className="text-sm font-medium text-muted-foreground">{t("upload.stanceLabel")}</label>
           <div className="flex rounded-lg border border-border overflow-hidden">
             {stanceOptions.map((opt) => (
               <button
@@ -204,43 +188,42 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
                     : "bg-card text-muted-foreground hover:text-foreground hover:bg-accent"
                 }`}
               >
-                {opt.label}
+                {t(opt.labelKey)}
               </button>
             ))}
           </div>
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">谈判地位</label>
+          <label className="text-sm font-medium text-muted-foreground">{t("upload.negotiationLabel")}</label>
           <Select value={negotiationPosition} onValueChange={setNegotiationPosition}>
             <SelectTrigger className="bg-card border-border">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="equal">平等地位</SelectItem>
-              <SelectItem value="partyA-advantage">甲方占优</SelectItem>
-              <SelectItem value="partyB-advantage">乙方占优</SelectItem>
+              <SelectItem value="equal">{t("upload.negotiation.equal")}</SelectItem>
+              <SelectItem value="partyA-advantage">{t("upload.negotiation.partyAAdvantage")}</SelectItem>
+              <SelectItem value="partyB-advantage">{t("upload.negotiation.partyBAdvantage")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      {/* 高级：自定义审查规则 */}
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-muted-foreground">
           <FileEdit className="w-4 h-4" />
-          <span className="text-sm font-medium">高级：自定义审查规则</span>
+          <span className="text-sm font-medium">{t("upload.rulesLabel")}</span>
         </div>
         <Textarea
           value={customRules}
           onChange={(e) => setCustomRules(e.target.value)}
-          placeholder="输入特定审查规则，例如：'重点关注赔偿限额'..."
+          placeholder={t("upload.rulesPlaceholder")}
           className="bg-card border-border min-h-[100px] resize-none"
         />
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Tag className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">快捷标签库（点击添加/移除）</span>
+            <span className="text-xs text-muted-foreground">{t("upload.tagsLabel")}</span>
           </div>
           <div className="flex flex-wrap gap-2">
             {tags.map((tag) => (
@@ -272,16 +255,12 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
                   value={newTagInput}
                   onChange={(e) => setNewTagInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && addCustomTag()}
-                  placeholder="输入标签名..."
+                  placeholder={t("upload.tagPlaceholder")}
                   className="h-7 w-36 text-xs bg-card border-border"
                   autoFocus
                 />
-                <Button size="sm" variant="ghost" className="h-7 px-2" onClick={addCustomTag}>
-                  确定
-                </Button>
-                <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => { setShowTagInput(false); setNewTagInput(""); }}>
-                  取消
-                </Button>
+                <Button size="sm" variant="ghost" className="h-7 px-2" onClick={addCustomTag}>{t("upload.tagConfirm")}</Button>
+                <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => { setShowTagInput(false); setNewTagInput(""); }}>{t("upload.tagCancel")}</Button>
               </div>
             ) : (
               <Badge
@@ -290,7 +269,7 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
                 onClick={() => setShowTagInput(true)}
               >
                 <Plus className="w-3 h-3 mr-1" />
-                自定义标签
+                {t("upload.addTag")}
               </Badge>
             )}
           </div>
@@ -303,15 +282,15 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
         onClick={() => file && onReview(file, { stance, negotiationPosition, companyName, customRules })}
       >
         <Shield className="w-5 h-5 mr-2" />
-        一键审核
+        {t("upload.submitBtn")}
       </Button>
 
       <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: "风险识别", desc: "自动识别合同中的法律风险" },
-          { label: "条款分析", desc: "逐条分析并提供修改建议" },
-          { label: "合规检查", desc: "对照最新法律法规审核" },
-        ].map((item) => (
+        {([
+          { label: t("upload.feature.risk"), desc: t("upload.feature.riskDesc") },
+          { label: t("upload.feature.clause"), desc: t("upload.feature.clauseDesc") },
+          { label: t("upload.feature.compliance"), desc: t("upload.feature.complianceDesc") },
+        ]).map((item) => (
           <Card key={item.label} className="p-4 bg-card text-center">
             <p className="font-medium text-foreground text-sm">{item.label}</p>
             <p className="text-xs text-muted-foreground mt-1">{item.desc}</p>
