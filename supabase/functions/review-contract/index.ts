@@ -90,8 +90,8 @@ serve(async (req) => {
       "partyB-advantage": "乙方占优势地位",
     };
 
-    const stanceDesc = stanceMap[stance] || "中立立场";
-    const positionDesc = positionMap[negotiationPosition] || "双方平等地位";
+    const stanceDesc = stanceMap[safeStance] || "中立立场";
+    const positionDesc = positionMap[safePosition] || "双方平等地位";
     const companyDesc = companyName ? `我方主体名称为「${companyName}」。` : "";
 
     const systemPrompt = `你是一位资深的中国法律顾问和合同审核专家。请以${stanceDesc}审核以下合同。
