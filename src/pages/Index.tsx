@@ -5,6 +5,8 @@ import ReviewResult from "@/components/contract/ReviewResult";
 import { ContractReview } from "@/types/contract";
 import { uploadAndReviewContract } from "@/lib/contractReview";
 import { toast } from "sonner";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type PageState = "upload" | "reviewing" | "result";
 
@@ -19,6 +21,7 @@ const Index = () => {
   const [pageState, setPageState] = useState<PageState>("upload");
   const [review, setReview] = useState<ContractReview | null>(null);
   const [progressStep, setProgressStep] = useState(0);
+  const { t } = useLanguage();
 
   const handleReview = async (file: File, config: ReviewConfig) => {
     setPageState("reviewing");
@@ -42,11 +45,12 @@ const Index = () => {
       <header className="gradient-primary">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-lg font-bold text-primary-foreground">JobCity</span>
+            <span className="text-lg font-bold text-primary-foreground">{t("header.brand")}</span>
             <span className="text-xs text-primary-foreground/70 border border-primary-foreground/30 rounded px-1.5 py-0.5">
-              合同审核
+              {t("header.badge")}
             </span>
           </div>
+          <LanguageSwitcher />
         </div>
       </header>
 
