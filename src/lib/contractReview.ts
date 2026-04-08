@@ -17,7 +17,9 @@ export async function uploadAndReviewContract(
   onProgress?.(0);
 
   // Upload file to storage
-  const filePath = `${Date.now()}_${file.name}`;
+  // Sanitize filename: replace non-ASCII chars to avoid storage key errors
+  const safeName = file.name.replace(/[^\x20-\x7E]/g, '_').replace(/\s+/g, '_');
+  const filePath = `${Date.now()}_${safeName}`;
   const { error: uploadError } = await supabase.storage
     .from("contracts")
     .upload(filePath, file);

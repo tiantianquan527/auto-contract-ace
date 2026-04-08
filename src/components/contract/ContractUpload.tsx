@@ -166,6 +166,15 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
         </div>
       </Card>
 
+      {/* 安全声明 */}
+      <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground flex-wrap">
+        <span className="flex items-center gap-1">🔒 企业级加密传输</span>
+        <span className="text-border">|</span>
+        <span>承诺不使用您的文件训练模型</span>
+        <span className="text-border">|</span>
+        <span>阅后即焚</span>
+      </div>
+
       {/* 我方主体名称 */}
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-muted-foreground">
