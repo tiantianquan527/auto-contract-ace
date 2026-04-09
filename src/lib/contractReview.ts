@@ -16,15 +16,8 @@ export async function uploadAndReviewContract(
   // Step 0: uploading
   onProgress?.(0);
 
-  // Get current user
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-  if (userError || !user) {
-    throw new Error("请先登录后再使用合同审核功能");
-  }
-
-  // Upload file to storage under user's folder
   const safeName = file.name.replace(/[^\x20-\x7E]/g, '_').replace(/\s+/g, '_');
-  const filePath = `${user.id}/${Date.now()}_${safeName}`;
+  const filePath = `anonymous/${Date.now()}_${safeName}`;
   const { error: uploadError } = await supabase.storage
     .from("contracts")
     .upload(filePath, file);

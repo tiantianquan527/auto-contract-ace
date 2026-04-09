@@ -13,7 +13,6 @@ const languages: { code: Locale; flag: string; label: string }[] = [
   { code: "en", flag: "🇺🇸", label: "English" },
   { code: "id", flag: "🇮🇩", label: "Bahasa" },
   { code: "es", flag: "🇪🇸", label: "Español" },
-  { code: "hi", flag: "🇮🇳", label: "हिन्दी" },
 ];
 
 const LanguageSwitcher = () => {
@@ -26,10 +25,9 @@ const LanguageSwitcher = () => {
         <Button
           variant="ghost"
           size="sm"
-          className="text-primary-foreground hover:bg-primary-foreground/10 gap-1.5"
+          className="text-primary-foreground hover:bg-primary-foreground/10 px-2"
         >
-          <span className="text-lg leading-none">{current.flag}</span>
-          <span className="text-sm font-medium">{current.label}</span>
+          <span className="text-xl leading-none">{current.flag}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
