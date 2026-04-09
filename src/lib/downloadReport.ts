@@ -167,7 +167,7 @@ export async function downloadRevisedReport(review: ContractReview) {
         spacing: { before: 100 },
         children: [
           new TextRun({ text: "原文：", bold: true, size: 22, font: "Arial" }),
-          new TextRun({ text: c.originalText, size: 22, font: "Arial", strikethrough: true, color: "999999" }),
+          new TextRun({ text: c.originalText, size: 22, font: "Arial", strike: true, color: "999999" }),
         ],
       }),
       new Paragraph({
