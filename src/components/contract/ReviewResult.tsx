@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SplitScreenReview from "./SplitScreenReview";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { downloadAnnotatedReport, downloadRevisedReport } from "@/lib/downloadReport";
 
 interface ReviewResultProps {
   review: ContractReview;
@@ -87,13 +88,13 @@ const ReviewResult = ({ review, onBack }: ReviewResultProps) => {
 
       <div className="grid grid-cols-2 gap-4">
         <Card className="p-0 bg-card border border-border hover:border-primary/40 transition-colors cursor-pointer">
-          <button className="w-full flex items-center justify-center gap-3 p-5">
+          <button className="w-full flex items-center justify-center gap-3 p-5" onClick={() => downloadAnnotatedReport(review)}>
             <Download className="w-5 h-5 text-muted-foreground" />
             <span className="font-medium text-foreground">{t("result.downloadAnnotated")}</span>
           </button>
         </Card>
         <Card className="p-0 bg-card border border-border hover:border-primary/40 transition-colors cursor-pointer">
-          <button className="w-full flex items-center justify-center gap-3 p-5">
+          <button className="w-full flex items-center justify-center gap-3 p-5" onClick={() => downloadRevisedReport(review)}>
             <Download className="w-5 h-5 text-muted-foreground" />
             <span className="font-medium text-foreground">{t("result.downloadRevised")}</span>
             <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs">
