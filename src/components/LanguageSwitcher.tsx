@@ -8,11 +8,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Locale } from "@/i18n/translations";
 
-const languages: { code: Locale; flag: string; label: string }[] = [
-  { code: "zh", flag: "🇨🇳", label: "中文" },
-  { code: "en", flag: "🇺🇸", label: "English" },
-  { code: "id", flag: "🇮🇩", label: "Bahasa" },
-  { code: "es", flag: "🇪🇸", label: "Español" },
+const languages: { code: Locale; flag: string }[] = [
+  { code: "zh", flag: "🇨🇳" },
+  { code: "en", flag: "🇺🇸" },
+  { code: "id", flag: "🇮🇩" },
+  { code: "es", flag: "🇪🇸" },
 ];
 
 const LanguageSwitcher = () => {
