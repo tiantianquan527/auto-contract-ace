@@ -35,10 +35,9 @@ const LanguageSwitcher = () => {
           <DropdownMenuItem
             key={lang.code}
             onClick={() => setLocale(lang.code)}
-            className={locale === lang.code ? "bg-accent" : ""}
+            className={`justify-center ${locale === lang.code ? "bg-accent" : ""}`}
           >
-            <span className="text-lg mr-2">{lang.flag}</span>
-            {lang.label}
+            <span className="text-2xl leading-none">{lang.flag}</span>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
