@@ -7,6 +7,10 @@ import { uploadAndReviewContract } from "@/lib/contractReview";
 import { toast } from "sonner";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { LayoutDashboard, LogIn } from "lucide-react";
 
 type PageState = "upload" | "reviewing" | "result";
 
@@ -22,6 +26,7 @@ const Index = () => {
   const [review, setReview] = useState<ContractReview | null>(null);
   const [progressStep, setProgressStep] = useState(0);
   const { t } = useLanguage();
+  const { user } = useAuth();
 
   const handleReview = async (file: File, config: ReviewConfig) => {
     setPageState("reviewing");
@@ -47,7 +52,14 @@ const Index = () => {
               {t("header.badge")}
             </span>
           </div>
-          <LanguageSwitcher />
+          <div className="flex items-center gap-2">
+            <Link to={user ? "/app" : "/auth"}>
+              <Button size="sm" variant="secondary" className="h-8">
+                {user ? <><LayoutDashboard className="w-4 h-4 mr-1" /> 工作台</> : <><LogIn className="w-4 h-4 mr-1" /> 企业登录</>}
+              </Button>
+            </Link>
+            <LanguageSwitcher />
+          </div>
         </div>
       </header>
 
