@@ -1,7 +1,7 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Building2, ClipboardList, Users, FileText, LogOut, Home } from "lucide-react";
+import { Building2, ClipboardList, Users, FileText, LogOut, Home, FolderOpen } from "lucide-react";
 import { useEffect } from "react";
 
 export default function AppLayout() {
@@ -21,7 +21,8 @@ export default function AppLayout() {
     { to: "/app/departments", icon: Building2, label: "部门管理", show: hasRole("admin") },
     { to: "/app/rules", icon: ClipboardList, label: "规则配置", show: hasRole("admin") || hasRole("legal") || hasRole("finance") },
     { to: "/app/users", icon: Users, label: "用户角色", show: hasRole("admin") },
-    { to: "/app/review", icon: FileText, label: "合同审核", show: true },
+    { to: "/app/contracts", icon: FolderOpen, label: "合同管理", show: true },
+    { to: "/app/review", icon: FileText, label: "快速试用", show: true },
   ];
 
   return (
