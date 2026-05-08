@@ -145,14 +145,33 @@ ${customRules ? `额外审查要求：${customRules}` : ""}
       throw new Error("AI returned empty response");
     }
 
-    // Parse the JSON from AI response (handle markdown code blocks)
+    // Parse the JSON from AI response (extract JSON object even if surrounded by prose/markdown)
     let reviewData;
+    const extractJson = (s: string): string | null => {
+      const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
+      if (fence) return fence[1].trim();
+      const start = s.indexOf("{");
+      if (start === -1) return null;
+      let depth = 0;
+      for (let i = start; i < s.length; i++) {
+        if (s[i] === "{") depth++;
+        else if (s[i] === "}") {
+          depth--;
+          if (depth === 0) return s.slice(start, i + 1);
+        }
+      }
+      return null;
+    };
     try {
-      const jsonStr = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      const jsonStr = extractJson(content);
+      if (!jsonStr) throw new Error("no json found");
       reviewData = JSON.parse(jsonStr);
     } catch (parseErr) {
       console.error("Failed to parse AI response:", content);
-      throw new Error("Failed to parse AI response as JSON");
+      return new Response(
+        JSON.stringify({ error: "AI 未能识别合同内容，请尝试上传纯文本（.txt）或可读取文本的 PDF/Word 文件" }),
+        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Build final result
