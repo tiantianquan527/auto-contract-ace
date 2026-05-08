@@ -54,8 +54,36 @@ serve(async (req) => {
       );
     }
 
-    // Extract text from file
-    const contractText = await fileData.text();
+    // Extract text from file (supports .txt and .docx)
+    let contractText = "";
+    const lowerPath = filePath.toLowerCase();
+    try {
+      if (lowerPath.endsWith(".docx")) {
+        const buf = new Uint8Array(await fileData.arrayBuffer());
+        const { unzipSync, strFromU8 } = await import("npm:fflate@0.8.2");
+        const files = unzipSync(buf, { filter: (f) => f.name === "word/document.xml" });
+        const xml = files["word/document.xml"] ? strFromU8(files["word/document.xml"]) : "";
+        contractText = xml
+          .replace(/<w:p[^>]*>/g, "\n")
+          .replace(/<[^>]+>/g, "")
+          .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'")
+          .trim();
+      } else {
+        contractText = await fileData.text();
+      }
+    } catch (extractErr) {
+      console.error("Text extraction failed:", extractErr);
+    }
+
+    const printableRatio = contractText
+      ? (contractText.match(/[\u0020-\u007E\u4e00-\u9fff\s]/g)?.length || 0) / contractText.length
+      : 0;
+    if (!contractText || contractText.length < 50 || printableRatio < 0.7) {
+      return new Response(
+        JSON.stringify({ error: "无法读取合同文本内容，请上传 .txt 或 .docx 格式的合同文件（暂不支持扫描件 PDF）" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Build the system prompt
     const stanceMap: Record<string, string> = {
@@ -145,14 +173,33 @@ ${customRules ? `额外审查要求：${customRules}` : ""}
       throw new Error("AI returned empty response");
     }
 
-    // Parse the JSON from AI response (handle markdown code blocks)
+    // Parse the JSON from AI response (extract JSON object even if surrounded by prose/markdown)
     let reviewData;
+    const extractJson = (s: string): string | null => {
+      const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
+      if (fence) return fence[1].trim();
+      const start = s.indexOf("{");
+      if (start === -1) return null;
+      let depth = 0;
+      for (let i = start; i < s.length; i++) {
+        if (s[i] === "{") depth++;
+        else if (s[i] === "}") {
+          depth--;
+          if (depth === 0) return s.slice(start, i + 1);
+        }
+      }
+      return null;
+    };
     try {
-      const jsonStr = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      const jsonStr = extractJson(content);
+      if (!jsonStr) throw new Error("no json found");
       reviewData = JSON.parse(jsonStr);
     } catch (parseErr) {
       console.error("Failed to parse AI response:", content);
-      throw new Error("Failed to parse AI response as JSON");
+      return new Response(
+        JSON.stringify({ error: "AI 未能识别合同内容，请尝试上传纯文本（.txt）或可读取文本的 PDF/Word 文件" }),
+        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Build final result
