@@ -14,6 +14,9 @@ import Departments from "./pages/app/Departments.tsx";
 import Rules from "./pages/app/Rules.tsx";
 import Users from "./pages/app/Users.tsx";
 import ReviewWorkspace from "./pages/app/ReviewWorkspace.tsx";
+import Contracts from "./pages/app/Contracts.tsx";
+import ContractNew from "./pages/app/ContractNew.tsx";
+import ContractDetail from "./pages/app/ContractDetail.tsx";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +37,9 @@ const App = () => (
                 <Route path="rules" element={<Rules />} />
                 <Route path="users" element={<Users />} />
                 <Route path="review" element={<ReviewWorkspace />} />
+                <Route path="contracts" element={<Contracts />} />
+                <Route path="contracts/new" element={<ContractNew />} />
+                <Route path="contracts/:id" element={<ContractDetail />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

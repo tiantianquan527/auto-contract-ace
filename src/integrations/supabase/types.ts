@@ -14,6 +14,217 @@ export type Database = {
   }
   public: {
     Tables: {
+      contract_approvals: {
+        Row: {
+          action: Database["public"]["Enums"]["approval_action"]
+          approver_id: string
+          comment: string | null
+          contract_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["approval_action"]
+          approver_id: string
+          comment?: string | null
+          contract_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["approval_action"]
+          approver_id?: string
+          comment?: string | null
+          contract_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_approvals_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_reviews: {
+        Row: {
+          clauses: Json | null
+          contract_id: string
+          created_at: string
+          id: string
+          matched_rule_ids: string[] | null
+          overall_score: number | null
+          risk_summary: Json | null
+          version: number
+        }
+        Insert: {
+          clauses?: Json | null
+          contract_id: string
+          created_at?: string
+          id?: string
+          matched_rule_ids?: string[] | null
+          overall_score?: number | null
+          risk_summary?: Json | null
+          version: number
+        }
+        Update: {
+          clauses?: Json | null
+          contract_id?: string
+          created_at?: string
+          id?: string
+          matched_rule_ids?: string[] | null
+          overall_score?: number | null
+          risk_summary?: Json | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_reviews_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_seals: {
+        Row: {
+          contract_id: string
+          created_at: string
+          file_name: string
+          file_path: string
+          id: string
+          note: string | null
+          uploaded_by: string
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          file_name: string
+          file_path: string
+          id?: string
+          note?: string | null
+          uploaded_by: string
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          id?: string
+          note?: string | null
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_seals_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_versions: {
+        Row: {
+          contract_id: string
+          created_at: string
+          file_name: string
+          file_path: string
+          id: string
+          note: string | null
+          uploaded_by: string
+          version: number
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          file_name: string
+          file_path: string
+          id?: string
+          note?: string | null
+          uploaded_by: string
+          version: number
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          id?: string
+          note?: string | null
+          uploaded_by?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_versions_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contracts: {
+        Row: {
+          company_name: string | null
+          created_at: string
+          current_version: number
+          custom_rules: string | null
+          department_id: string | null
+          file_name: string
+          id: string
+          negotiation_position: string | null
+          stance: string | null
+          status: Database["public"]["Enums"]["contract_status"]
+          title: string
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string
+          current_version?: number
+          custom_rules?: string | null
+          department_id?: string | null
+          file_name: string
+          id?: string
+          negotiation_position?: string | null
+          stance?: string | null
+          status?: Database["public"]["Enums"]["contract_status"]
+          title: string
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string
+          current_version?: number
+          custom_rules?: string | null
+          department_id?: string | null
+          file_name?: string
+          id?: string
+          negotiation_position?: string | null
+          stance?: string | null
+          status?: Database["public"]["Enums"]["contract_status"]
+          title?: string
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       departments: {
         Row: {
           created_at: string
@@ -152,6 +363,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_department: { Args: { _uid: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -162,6 +374,14 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "legal" | "finance" | "employee"
+      approval_action: "approve" | "reject" | "comment"
+      contract_status:
+        | "draft"
+        | "reviewing"
+        | "revision_required"
+        | "approved"
+        | "sealed"
+        | "archived"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -290,6 +510,15 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "legal", "finance", "employee"],
+      approval_action: ["approve", "reject", "comment"],
+      contract_status: [
+        "draft",
+        "reviewing",
+        "revision_required",
+        "approved",
+        "sealed",
+        "archived",
+      ],
     },
   },
 } as const

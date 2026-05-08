@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
-import { Building2, ClipboardList, Users, FileText } from "lucide-react";
+import { Building2, ClipboardList, Users, FileText, FolderOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const roleLabels: Record<string, string> = {
@@ -16,7 +16,8 @@ export default function Dashboard() {
     { to: "/app/departments", icon: Building2, label: "部门管理", desc: "维护公司部门", show: hasRole("admin") },
     { to: "/app/rules", icon: ClipboardList, label: "规则配置", desc: "为部门配置审核规则", show: hasRole("admin") || hasRole("legal") || hasRole("finance") },
     { to: "/app/users", icon: Users, label: "用户角色", desc: "分配用户角色与部门", show: hasRole("admin") },
-    { to: "/app/review", icon: FileText, label: "合同审核", desc: "上传合同进行 AI 审核", show: true },
+    { to: "/app/contracts", icon: FolderOpen, label: "合同管理", desc: "上传/审核/审批/盖章/归档", show: true },
+    { to: "/app/review", icon: FileText, label: "快速试用", desc: "无需流程，单次 AI 审核", show: true },
   ];
 
   return (
