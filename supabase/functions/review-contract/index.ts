@@ -54,8 +54,36 @@ serve(async (req) => {
       );
     }
 
-    // Extract text from file
-    const contractText = await fileData.text();
+    // Extract text from file (supports .txt and .docx)
+    let contractText = "";
+    const lowerPath = filePath.toLowerCase();
+    try {
+      if (lowerPath.endsWith(".docx")) {
+        const buf = new Uint8Array(await fileData.arrayBuffer());
+        const { unzipSync, strFromU8 } = await import("npm:fflate@0.8.2");
+        const files = unzipSync(buf, { filter: (f) => f.name === "word/document.xml" });
+        const xml = files["word/document.xml"] ? strFromU8(files["word/document.xml"]) : "";
+        contractText = xml
+          .replace(/<w:p[^>]*>/g, "\n")
+          .replace(/<[^>]+>/g, "")
+          .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'")
+          .trim();
+      } else {
+        contractText = await fileData.text();
+      }
+    } catch (extractErr) {
+      console.error("Text extraction failed:", extractErr);
+    }
+
+    const printableRatio = contractText
+      ? (contractText.match(/[\u0020-\u007E\u4e00-\u9fff\s]/g)?.length || 0) / contractText.length
+      : 0;
+    if (!contractText || contractText.length < 50 || printableRatio < 0.7) {
+      return new Response(
+        JSON.stringify({ error: "无法读取合同文本内容，请上传 .txt 或 .docx 格式的合同文件（暂不支持扫描件 PDF）" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Build the system prompt
     const stanceMap: Record<string, string> = {
