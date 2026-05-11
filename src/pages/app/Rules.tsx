@@ -153,7 +153,20 @@ export default function Rules() {
               ))}
             </div>
           </div>
-          <Button onClick={create}><Plus className="w-4 h-4 mr-1" /> 创建规则</Button>
+          <div className="space-y-2">
+            <label className="text-xs text-muted-foreground">规则附件（可选 · 支持 Word / PDF / Excel / 图片）</label>
+            <label className="flex items-center gap-3 p-3 border border-dashed rounded-md cursor-pointer hover:border-primary">
+              <Upload className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm flex-1 truncate">{ruleFile ? ruleFile.name : "点击选择文件"}</span>
+              {ruleFile && (
+                <button type="button" onClick={(e) => { e.preventDefault(); setRuleFile(null); }}>
+                  <X className="w-4 h-4 text-muted-foreground" />
+                </button>
+              )}
+              <input type="file" className="hidden" accept=".doc,.docx,.pdf,.xls,.xlsx,.png,.jpg,.jpeg" onChange={(e) => setRuleFile(e.target.files?.[0] ?? null)} />
+            </label>
+          </div>
+          <Button onClick={create} disabled={uploading}><Plus className="w-4 h-4 mr-1" /> {uploading ? "提交中…" : "创建规则"}</Button>
         </Card>
       )}
 
