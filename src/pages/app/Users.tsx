@@ -14,12 +14,18 @@ interface ProfileRow {
   display_name: string | null;
   email: string | null;
   department_id: string | null;
+  access_level: "read" | "download" | "modify";
 }
 interface RoleRow { user_id: string; role: AppRole; }
 interface Dept { id: string; name: string; }
 
 const ROLES: AppRole[] = ["admin", "legal", "finance", "employee"];
 const labels: Record<AppRole, string> = { admin: "管理员", legal: "法务", finance: "财务", employee: "普通员工" };
+const ACCESS_LABELS: Record<"read" | "download" | "modify", string> = {
+  read: "仅阅读",
+  download: "可下载",
+  modify: "可修改",
+};
 
 export default function Users() {
   const { hasRole, user, refreshRoles } = useAuth();
