@@ -97,14 +97,26 @@ export default function Users() {
                 <p className="font-medium">{p.display_name || p.email}</p>
                 <p className="text-xs text-muted-foreground">{p.email}</p>
               </div>
-              <div className="min-w-[180px]">
-                <Select value={p.department_id ?? "none"} onValueChange={(v) => setDept(p.user_id, v)}>
-                  <SelectTrigger><SelectValue placeholder="选择部门" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">未分配部门</SelectItem>
-                    {depts.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+              <div className="flex gap-2 flex-wrap">
+                <div className="min-w-[160px]">
+                  <Select value={p.department_id ?? "none"} onValueChange={(v) => setDept(p.user_id, v)}>
+                    <SelectTrigger><SelectValue placeholder="选择部门" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">未分配部门</SelectItem>
+                      {depts.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="min-w-[140px]">
+                  <Select value={p.access_level ?? "read"} onValueChange={(v) => setAccess(p.user_id, v as any)}>
+                    <SelectTrigger><SelectValue placeholder="访问权限" /></SelectTrigger>
+                    <SelectContent>
+                      {(["read","download","modify"] as const).map(k => (
+                        <SelectItem key={k} value={k}>{ACCESS_LABELS[k]}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
