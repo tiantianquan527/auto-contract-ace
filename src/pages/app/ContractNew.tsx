@@ -124,12 +124,18 @@ export default function ContractNew() {
           <Textarea value={customRules} onChange={(e) => setCustomRules(e.target.value)} className="min-h-[80px]" />
         </div>
         <div className="space-y-2">
-          <Label>合同文件 *（.txt / .docx）</Label>
+          <Label>合同文件 *（支持 Word / PDF / Excel / 图片 / TXT）</Label>
           <label className="flex items-center gap-3 p-4 border border-dashed rounded-md cursor-pointer hover:border-primary">
             <Upload className="w-5 h-5 text-muted-foreground" />
             <span className="text-sm">{file ? file.name : "点击选择文件"}</span>
-            <input type="file" className="hidden" accept=".txt,.docx" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+            <input
+              type="file"
+              className="hidden"
+              accept=".txt,.doc,.docx,.pdf,.xls,.xlsx,.png,.jpg,.jpeg"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            />
           </label>
+          <p className="text-xs text-muted-foreground">提示：AI 智能审核目前对 .txt / .docx 文本提取最准确；其它格式会先归档，可在合同详情中补充文本进行审核。</p>
         </div>
         <Button onClick={submit} disabled={submitting} className="w-full">
           {submitting ? "提交中…" : "创建合同"}
