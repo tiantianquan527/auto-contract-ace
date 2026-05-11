@@ -16,6 +16,7 @@ interface Rule {
   id: string; name: string; tags: string[]; description: string;
   department_id: string | null; category: string | null; is_active: boolean;
   created_by: string | null;
+  attachment_path: string | null; attachment_name: string | null;
 }
 
 export default function Rules() {
