@@ -53,17 +53,43 @@ export default function Rules() {
   const create = async () => {
     if (!name.trim()) return toast.error("请输入规则名称");
     if (!desc.trim()) return toast.error("请填写规则描述");
-    const { error } = await supabase.from("review_rules").insert({
-      name: name.trim(),
-      description: desc.trim(),
-      tags,
-      category,
-      department_id: deptId === "none" ? null : deptId,
-      created_by: user?.id,
-    });
-    if (error) return toast.error(error.message);
-    toast.success("规则已创建");
-    setName(""); setDesc(""); setTags([]); setDeptId("none"); load();
+    setUploading(true);
+    try {
+      let attachment_path: string | null = null;
+      let attachment_name: string | null = null;
+      if (ruleFile && user) {
+        const safe = ruleFile.name.replace(/[^\x20-\x7E]/g, "_").replace(/\s+/g, "_");
+        const path = `${user.id}/${Date.now()}_${safe}`;
+        const { error: upErr } = await sb.storage.from("rule-attachments").upload(path, ruleFile);
+        if (upErr) throw upErr;
+        attachment_path = path;
+        attachment_name = ruleFile.name;
+      }
+      const { error } = await supabase.from("review_rules").insert({
+        name: name.trim(),
+        description: desc.trim(),
+        tags,
+        category,
+        department_id: deptId === "none" ? null : deptId,
+        created_by: user?.id,
+        attachment_path,
+        attachment_name,
+      });
+      if (error) throw error;
+      toast.success("规则已创建");
+      setName(""); setDesc(""); setTags([]); setDeptId("none"); setRuleFile(null); load();
+    } catch (e: any) {
+      toast.error(e.message || "创建失败");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const downloadAttachment = async (path: string, fileName: string) => {
+    const { data, error } = await supabase.storage.from("rule-attachments").createSignedUrl(path, 60);
+    if (error || !data) return toast.error("下载失败");
+    const a = document.createElement("a");
+    a.href = data.signedUrl; a.download = fileName; a.click();
   };
 
   const remove = async (id: string) => {
