@@ -22,6 +22,7 @@ export type Database = {
           contract_id: string
           created_at: string
           id: string
+          stage: string | null
         }
         Insert: {
           action: Database["public"]["Enums"]["approval_action"]
@@ -30,6 +31,7 @@ export type Database = {
           contract_id: string
           created_at?: string
           id?: string
+          stage?: string | null
         }
         Update: {
           action?: Database["public"]["Enums"]["approval_action"]
@@ -38,6 +40,7 @@ export type Database = {
           contract_id?: string
           created_at?: string
           id?: string
+          stage?: string | null
         }
         Relationships: [
           {
@@ -392,6 +395,10 @@ export type Database = {
         | "approved"
         | "sealed"
         | "archived"
+        | "self_review"
+        | "finance_review"
+        | "legal_review"
+        | "head_approval"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -529,6 +536,10 @@ export const Constants = {
         "approved",
         "sealed",
         "archived",
+        "self_review",
+        "finance_review",
+        "legal_review",
+        "head_approval",
       ],
     },
   },
