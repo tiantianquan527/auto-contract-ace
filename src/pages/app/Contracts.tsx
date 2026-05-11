@@ -8,15 +8,23 @@ import { FileText, Plus } from "lucide-react";
 
 const statusLabel: Record<string, string> = {
   draft: "草稿",
+  self_review: "发起人一审",
   reviewing: "审核中",
+  finance_review: "财务审核中",
+  legal_review: "法务审核中",
+  head_approval: "部门负责人审批中",
   revision_required: "待修订",
-  approved: "已通过",
+  approved: "审批通过",
   sealed: "已盖章",
   archived: "已归档",
 };
 const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
   draft: "outline",
+  self_review: "secondary",
   reviewing: "secondary",
+  finance_review: "secondary",
+  legal_review: "secondary",
+  head_approval: "secondary",
   revision_required: "destructive",
   approved: "default",
   sealed: "default",
