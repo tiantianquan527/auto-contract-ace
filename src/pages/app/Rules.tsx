@@ -30,6 +30,8 @@ export default function Rules() {
   const [category, setCategory] = useState("legal");
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>([]);
+  const [ruleFile, setRuleFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const load = async () => {
     const [{ data: d }, { data: r }] = await Promise.all([
