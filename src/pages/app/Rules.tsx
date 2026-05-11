@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ClipboardList, Plus, Trash2, X } from "lucide-react";
+import { ClipboardList, Plus, Trash2, X, Upload, FileText, Download } from "lucide-react";
+import { supabase as sb } from "@/integrations/supabase/client";
 
 interface Dept { id: string; name: string; }
 interface Rule {
