@@ -70,6 +70,13 @@ export default function Users() {
     load();
   };
 
+  const setAccess = async (uid: string, level: "read" | "download" | "modify") => {
+    const { error } = await supabase.from("profiles").update({ access_level: level }).eq("user_id", uid);
+    if (error) return toast.error(error.message);
+    toast.success("已更新权限");
+    load();
+  };
+
   if (!isAdmin) {
     return <div className="p-8"><p className="text-muted-foreground">仅管理员可访问此页面。</p></div>;
   }
