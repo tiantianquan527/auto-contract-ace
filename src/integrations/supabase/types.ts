@@ -254,6 +254,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          access_level: Database["public"]["Enums"]["access_level"]
           created_at: string
           department_id: string | null
           display_name: string | null
@@ -263,6 +264,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          access_level?: Database["public"]["Enums"]["access_level"]
           created_at?: string
           department_id?: string | null
           display_name?: string | null
@@ -272,6 +274,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          access_level?: Database["public"]["Enums"]["access_level"]
           created_at?: string
           department_id?: string | null
           display_name?: string | null
@@ -292,6 +295,8 @@ export type Database = {
       }
       review_rules: {
         Row: {
+          attachment_name: string | null
+          attachment_path: string | null
           category: string | null
           created_at: string
           created_by: string | null
@@ -304,6 +309,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          attachment_name?: string | null
+          attachment_path?: string | null
           category?: string | null
           created_at?: string
           created_by?: string | null
@@ -316,6 +323,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          attachment_name?: string | null
+          attachment_path?: string | null
           category?: string | null
           created_at?: string
           created_by?: string | null
@@ -373,6 +382,7 @@ export type Database = {
       }
     }
     Enums: {
+      access_level: "read" | "download" | "modify"
       app_role: "admin" | "legal" | "finance" | "employee"
       approval_action: "approve" | "reject" | "comment"
       contract_status:
@@ -509,6 +519,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      access_level: ["read", "download", "modify"],
       app_role: ["admin", "legal", "finance", "employee"],
       approval_action: ["approve", "reject", "comment"],
       contract_status: [

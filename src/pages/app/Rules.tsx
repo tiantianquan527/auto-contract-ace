@@ -8,13 +8,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ClipboardList, Plus, Trash2, X } from "lucide-react";
+import { ClipboardList, Plus, Trash2, X, Upload, FileText, Download } from "lucide-react";
+import { supabase as sb } from "@/integrations/supabase/client";
 
 interface Dept { id: string; name: string; }
 interface Rule {
   id: string; name: string; tags: string[]; description: string;
   department_id: string | null; category: string | null; is_active: boolean;
   created_by: string | null;
+  attachment_path: string | null; attachment_name: string | null;
 }
 
 export default function Rules() {
@@ -28,6 +30,8 @@ export default function Rules() {
   const [category, setCategory] = useState("legal");
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>([]);
+  const [ruleFile, setRuleFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const load = async () => {
     const [{ data: d }, { data: r }] = await Promise.all([
@@ -49,17 +53,43 @@ export default function Rules() {
   const create = async () => {
     if (!name.trim()) return toast.error("请输入规则名称");
     if (!desc.trim()) return toast.error("请填写规则描述");
-    const { error } = await supabase.from("review_rules").insert({
-      name: name.trim(),
-      description: desc.trim(),
-      tags,
-      category,
-      department_id: deptId === "none" ? null : deptId,
-      created_by: user?.id,
-    });
-    if (error) return toast.error(error.message);
-    toast.success("规则已创建");
-    setName(""); setDesc(""); setTags([]); setDeptId("none"); load();
+    setUploading(true);
+    try {
+      let attachment_path: string | null = null;
+      let attachment_name: string | null = null;
+      if (ruleFile && user) {
+        const safe = ruleFile.name.replace(/[^\x20-\x7E]/g, "_").replace(/\s+/g, "_");
+        const path = `${user.id}/${Date.now()}_${safe}`;
+        const { error: upErr } = await sb.storage.from("rule-attachments").upload(path, ruleFile);
+        if (upErr) throw upErr;
+        attachment_path = path;
+        attachment_name = ruleFile.name;
+      }
+      const { error } = await supabase.from("review_rules").insert({
+        name: name.trim(),
+        description: desc.trim(),
+        tags,
+        category,
+        department_id: deptId === "none" ? null : deptId,
+        created_by: user?.id,
+        attachment_path,
+        attachment_name,
+      });
+      if (error) throw error;
+      toast.success("规则已创建");
+      setName(""); setDesc(""); setTags([]); setDeptId("none"); setRuleFile(null); load();
+    } catch (e: any) {
+      toast.error(e.message || "创建失败");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const downloadAttachment = async (path: string, fileName: string) => {
+    const { data, error } = await supabase.storage.from("rule-attachments").createSignedUrl(path, 60);
+    if (error || !data) return toast.error("下载失败");
+    const a = document.createElement("a");
+    a.href = data.signedUrl; a.download = fileName; a.click();
   };
 
   const remove = async (id: string) => {
@@ -123,7 +153,20 @@ export default function Rules() {
               ))}
             </div>
           </div>
-          <Button onClick={create}><Plus className="w-4 h-4 mr-1" /> 创建规则</Button>
+          <div className="space-y-2">
+            <label className="text-xs text-muted-foreground">规则附件（可选 · 支持 Word / PDF / Excel / 图片）</label>
+            <label className="flex items-center gap-3 p-3 border border-dashed rounded-md cursor-pointer hover:border-primary">
+              <Upload className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm flex-1 truncate">{ruleFile ? ruleFile.name : "点击选择文件"}</span>
+              {ruleFile && (
+                <button type="button" onClick={(e) => { e.preventDefault(); setRuleFile(null); }}>
+                  <X className="w-4 h-4 text-muted-foreground" />
+                </button>
+              )}
+              <input type="file" className="hidden" accept=".doc,.docx,.pdf,.xls,.xlsx,.png,.jpg,.jpeg" onChange={(e) => setRuleFile(e.target.files?.[0] ?? null)} />
+            </label>
+          </div>
+          <Button onClick={create} disabled={uploading}><Plus className="w-4 h-4 mr-1" /> {uploading ? "提交中…" : "创建规则"}</Button>
         </Card>
       )}
 
@@ -145,6 +188,14 @@ export default function Rules() {
                   <div className="flex flex-wrap gap-1 mt-2">
                     {r.tags.map(t => <Badge key={t} variant="outline" className="text-xs">#{t}</Badge>)}
                   </div>
+                )}
+                {r.attachment_path && r.attachment_name && (
+                  <button
+                    onClick={() => downloadAttachment(r.attachment_path!, r.attachment_name!)}
+                    className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                  >
+                    <FileText className="w-3 h-3" /> {r.attachment_name} <Download className="w-3 h-3" />
+                  </button>
                 )}
               </div>
               {(hasRole("admin") || r.created_by === user?.id) && (

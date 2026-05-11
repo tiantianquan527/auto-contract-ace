@@ -14,12 +14,18 @@ interface ProfileRow {
   display_name: string | null;
   email: string | null;
   department_id: string | null;
+  access_level: "read" | "download" | "modify";
 }
 interface RoleRow { user_id: string; role: AppRole; }
 interface Dept { id: string; name: string; }
 
 const ROLES: AppRole[] = ["admin", "legal", "finance", "employee"];
 const labels: Record<AppRole, string> = { admin: "管理员", legal: "法务", finance: "财务", employee: "普通员工" };
+const ACCESS_LABELS: Record<"read" | "download" | "modify", string> = {
+  read: "仅阅读",
+  download: "可下载",
+  modify: "可修改",
+};
 
 export default function Users() {
   const { hasRole, user, refreshRoles } = useAuth();
@@ -64,6 +70,13 @@ export default function Users() {
     load();
   };
 
+  const setAccess = async (uid: string, level: "read" | "download" | "modify") => {
+    const { error } = await supabase.from("profiles").update({ access_level: level }).eq("user_id", uid);
+    if (error) return toast.error(error.message);
+    toast.success("已更新权限");
+    load();
+  };
+
   if (!isAdmin) {
     return <div className="p-8"><p className="text-muted-foreground">仅管理员可访问此页面。</p></div>;
   }
@@ -72,7 +85,7 @@ export default function Users() {
     <div className="p-8 max-w-6xl space-y-4">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2"><UsersIcon className="w-6 h-6" /> 用户与角色</h1>
-        <p className="text-sm text-muted-foreground mt-1">分配用户的角色和所属部门。</p>
+        <p className="text-sm text-muted-foreground mt-1">分配用户的角色、所属部门，以及访问权限（仅阅读 / 可下载 / 可修改）。</p>
       </div>
 
       {profiles.map(p => {
@@ -84,14 +97,26 @@ export default function Users() {
                 <p className="font-medium">{p.display_name || p.email}</p>
                 <p className="text-xs text-muted-foreground">{p.email}</p>
               </div>
-              <div className="min-w-[180px]">
-                <Select value={p.department_id ?? "none"} onValueChange={(v) => setDept(p.user_id, v)}>
-                  <SelectTrigger><SelectValue placeholder="选择部门" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">未分配部门</SelectItem>
-                    {depts.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+              <div className="flex gap-2 flex-wrap">
+                <div className="min-w-[160px]">
+                  <Select value={p.department_id ?? "none"} onValueChange={(v) => setDept(p.user_id, v)}>
+                    <SelectTrigger><SelectValue placeholder="选择部门" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">未分配部门</SelectItem>
+                      {depts.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="min-w-[140px]">
+                  <Select value={p.access_level ?? "read"} onValueChange={(v) => setAccess(p.user_id, v as any)}>
+                    <SelectTrigger><SelectValue placeholder="访问权限" /></SelectTrigger>
+                    <SelectContent>
+                      {(["read","download","modify"] as const).map(k => (
+                        <SelectItem key={k} value={k}>{ACCESS_LABELS[k]}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
