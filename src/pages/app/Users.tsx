@@ -85,7 +85,7 @@ export default function Users() {
     <div className="p-8 max-w-6xl space-y-4">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2"><UsersIcon className="w-6 h-6" /> 用户与角色</h1>
-        <p className="text-sm text-muted-foreground mt-1">分配用户的角色和所属部门。</p>
+        <p className="text-sm text-muted-foreground mt-1">分配用户的角色、所属部门，以及访问权限（仅阅读 / 可下载 / 可修改）。</p>
       </div>
 
       {profiles.map(p => {
