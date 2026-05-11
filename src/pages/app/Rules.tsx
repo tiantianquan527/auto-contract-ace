@@ -189,6 +189,14 @@ export default function Rules() {
                     {r.tags.map(t => <Badge key={t} variant="outline" className="text-xs">#{t}</Badge>)}
                   </div>
                 )}
+                {r.attachment_path && r.attachment_name && (
+                  <button
+                    onClick={() => downloadAttachment(r.attachment_path!, r.attachment_name!)}
+                    className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                  >
+                    <FileText className="w-3 h-3" /> {r.attachment_name} <Download className="w-3 h-3" />
+                  </button>
+                )}
               </div>
               {(hasRole("admin") || r.created_by === user?.id) && (
                 <Button variant="ghost" size="sm" onClick={() => remove(r.id)}>
