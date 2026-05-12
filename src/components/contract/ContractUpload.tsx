@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -13,12 +14,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { toast } from "sonner";
 
-interface ReviewConfig {
+export interface ReviewConfig {
   stance: string;
   negotiationPosition: string;
   companyName: string;
   customRules: string;
+  departmentName: string;
+  contractType: string;
+  currency: string;
+  startDate: string;
+  endDate: string;
+  partyAName: string;
+  partyBName: string;
+  counterpartyContactName: string;
+  counterpartyContactPhone: string;
+  ourBankAccount: string;
+  counterpartyBankAccount: string;
 }
 
 interface ContractUploadProps {
@@ -28,6 +41,13 @@ interface ContractUploadProps {
 
 type Stance = "neutral" | "partyA" | "partyB";
 
+const CONTRACT_TYPES = [
+  "催收", "广告推广", "VCRP", "股权转让", "租赁", "工商代理",
+  "注册地址续费", "办公室租赁", "团餐", "年会", "团建", "机票购买",
+  "酒店预定", "租车", "会议场地租赁", "下午茶采购", "桶装水采购", "其他",
+];
+const CURRENCIES = ["CNY 人民币", "USD 美元", "EUR 欧元", "HKD 港币", "JPY 日元", "GBP 英镑", "其他"];
+
 const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
   const { t } = useLanguage();
   const [file, setFile] = useState<File | null>(null);
@@ -35,7 +55,18 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
   const [stance, setStance] = useState<Stance>("partyA");
   const [negotiationPosition, setNegotiationPosition] = useState("equal");
   const [customRules, setCustomRules] = useState("");
-  const [companyName, setCompanyName] = useState("");
+
+  const [departmentName, setDepartmentName] = useState("");
+  const [contractType, setContractType] = useState("");
+  const [currency, setCurrency] = useState("CNY 人民币");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [partyAName, setPartyAName] = useState("");
+  const [partyBName, setPartyBName] = useState("");
+  const [counterpartyContactName, setCounterpartyContactName] = useState("");
+  const [counterpartyContactPhone, setCounterpartyContactPhone] = useState("");
+  const [ourBankAccount, setOurBankAccount] = useState("");
+  const [counterpartyBankAccount, setCounterpartyBankAccount] = useState("");
 
   const promptTags = [
     t("tag.penaltyRatio"),
@@ -100,6 +131,34 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
     { value: "partyB", labelKey: "upload.stance.partyB" },
   ];
 
+  const handleSubmit = () => {
+    if (!file) return;
+    const required: [string, string][] = [
+      [departmentName, "所属部门"],
+      [contractType, "合同类型"],
+      [currency, "币种"],
+      [startDate, "起始日期"],
+      [endDate, "到期日"],
+      [partyAName, "甲方名称"],
+      [partyBName, "乙方名称"],
+      [counterpartyContactName, "对方联系人"],
+      [counterpartyContactPhone, "对方联系电话"],
+    ];
+    for (const [v, label] of required) {
+      if (!v) { toast.error(`请填写${label}`); return; }
+    }
+    onReview(file, {
+      stance, negotiationPosition,
+      companyName: partyAName,
+      customRules,
+      departmentName, contractType, currency,
+      startDate, endDate,
+      partyAName, partyBName,
+      counterpartyContactName, counterpartyContactPhone,
+      ourBankAccount, counterpartyBankAccount,
+    });
+  };
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="text-center space-y-3">
@@ -124,7 +183,7 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
         onDrop={handleDrop}
         onClick={() => !file && document.getElementById("file-input")?.click()}
       >
-        <input id="file-input" type="file" accept=".pdf,.doc,.docx,.txt" className="hidden" onChange={handleFileChange} />
+        <input id="file-input" type="file" accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.png,.jpg,.jpeg" className="hidden" onChange={handleFileChange} />
         <div className="p-10 flex flex-col items-center gap-4">
           {file ? (
             <div className="flex items-center gap-4 w-full">
@@ -146,7 +205,7 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
               </div>
               <div className="text-center">
                 <p className="font-medium text-foreground">{t("upload.dropzone")}</p>
-                <p className="text-sm text-muted-foreground mt-1">{t("upload.formats")}</p>
+                <p className="text-sm text-muted-foreground mt-1">支持 PDF / Word / Excel / 图片 / TXT,最大 20MB</p>
               </div>
             </>
           )}
@@ -161,18 +220,78 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
         <span>{t("upload.security.ephemeral")}</span>
       </div>
 
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Building2 className="w-4 h-4" />
-          <label className="text-sm font-medium">{t("upload.companyLabel")}</label>
+      <Card className="p-5 space-y-4 bg-card">
+        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+          <Building2 className="w-4 h-4 text-primary" /> 合同基本信息
+        </h3>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs">所属部门 *</Label>
+            <Input value={departmentName} onChange={(e) => setDepartmentName(e.target.value)} placeholder="如：行政部" />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">合同类型 *</Label>
+            <Select value={contractType} onValueChange={setContractType}>
+              <SelectTrigger><SelectValue placeholder="请选择" /></SelectTrigger>
+              <SelectContent className="max-h-72">
+                {CONTRACT_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        <Input
-          value={companyName}
-          onChange={(e) => setCompanyName(e.target.value)}
-          placeholder={t("upload.companyPlaceholder")}
-          className="bg-card border-border"
-        />
-      </div>
+
+        <div className="grid grid-cols-3 gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs">币种 *</Label>
+            <Select value={currency} onValueChange={setCurrency}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">起始日期 *</Label>
+            <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">到期日 *</Label>
+            <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs">甲方名称 *</Label>
+            <Input value={partyAName} onChange={(e) => setPartyAName(e.target.value)} placeholder="我方/甲方公司名称" />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">乙方名称 *</Label>
+            <Input value={partyBName} onChange={(e) => setPartyBName(e.target.value)} placeholder="对方/乙方公司名称" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs">对方联系人 *</Label>
+            <Input value={counterpartyContactName} onChange={(e) => setCounterpartyContactName(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">对方联系电话 *</Label>
+            <Input value={counterpartyContactPhone} onChange={(e) => setCounterpartyContactPhone(e.target.value)} />
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-xs">我方银行账户</Label>
+          <Textarea value={ourBankAccount} onChange={(e) => setOurBankAccount(e.target.value)} placeholder="开户行 / 户名 / 账号" className="min-h-[56px]" />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">对方银行账户</Label>
+          <Textarea value={counterpartyBankAccount} onChange={(e) => setCounterpartyBankAccount(e.target.value)} placeholder="开户行 / 户名 / 账号" className="min-h-[56px]" />
+        </div>
+      </Card>
 
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-2">
@@ -279,7 +398,7 @@ const ContractUpload = ({ onReview, isReviewing }: ContractUploadProps) => {
       <Button
         className="w-full h-12 text-base font-semibold gradient-primary text-primary-foreground hover:opacity-90 transition-opacity"
         disabled={!file || isReviewing}
-        onClick={() => file && onReview(file, { stance, negotiationPosition, companyName, customRules })}
+        onClick={handleSubmit}
       >
         <Shield className="w-5 h-5 mr-2" />
         {t("upload.submitBtn")}
