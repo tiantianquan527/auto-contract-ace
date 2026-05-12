@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ContractUpload from "@/components/contract/ContractUpload";
+import ContractUpload, { type ReviewConfig } from "@/components/contract/ContractUpload";
 import ReviewProgress from "@/components/contract/ReviewProgress";
 import ReviewResult from "@/components/contract/ReviewResult";
 import { ContractReview } from "@/types/contract";
