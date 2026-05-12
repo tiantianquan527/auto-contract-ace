@@ -175,14 +175,25 @@ export type Database = {
       contracts: {
         Row: {
           company_name: string | null
+          contract_type: string | null
+          counterparty_bank_account: string | null
+          counterparty_contact_name: string | null
+          counterparty_contact_phone: string | null
           created_at: string
+          currency: string | null
           current_version: number
           custom_rules: string | null
           department_id: string | null
+          department_name: string | null
+          end_date: string | null
           file_name: string
           id: string
           negotiation_position: string | null
+          our_bank_account: string | null
+          party_a_name: string | null
+          party_b_name: string | null
           stance: string | null
+          start_date: string | null
           status: Database["public"]["Enums"]["contract_status"]
           title: string
           updated_at: string
@@ -190,14 +201,25 @@ export type Database = {
         }
         Insert: {
           company_name?: string | null
+          contract_type?: string | null
+          counterparty_bank_account?: string | null
+          counterparty_contact_name?: string | null
+          counterparty_contact_phone?: string | null
           created_at?: string
+          currency?: string | null
           current_version?: number
           custom_rules?: string | null
           department_id?: string | null
+          department_name?: string | null
+          end_date?: string | null
           file_name: string
           id?: string
           negotiation_position?: string | null
+          our_bank_account?: string | null
+          party_a_name?: string | null
+          party_b_name?: string | null
           stance?: string | null
+          start_date?: string | null
           status?: Database["public"]["Enums"]["contract_status"]
           title: string
           updated_at?: string
@@ -205,14 +227,25 @@ export type Database = {
         }
         Update: {
           company_name?: string | null
+          contract_type?: string | null
+          counterparty_bank_account?: string | null
+          counterparty_contact_name?: string | null
+          counterparty_contact_phone?: string | null
           created_at?: string
+          currency?: string | null
           current_version?: number
           custom_rules?: string | null
           department_id?: string | null
+          department_name?: string | null
+          end_date?: string | null
           file_name?: string
           id?: string
           negotiation_position?: string | null
+          our_bank_account?: string | null
+          party_a_name?: string | null
+          party_b_name?: string | null
           stance?: string | null
+          start_date?: string | null
           status?: Database["public"]["Enums"]["contract_status"]
           title?: string
           updated_at?: string
