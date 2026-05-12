@@ -66,7 +66,7 @@ export default function ContractDetail() {
 
   const load = useCallback(async () => {
     if (!id) return;
-    const { data: c } = await supabase.from("contracts").select("*, departments(name)").eq("id", id).single();
+    const { data: c } = await supabase.from("contracts").select("*").eq("id", id).single();
     setContract(c);
     const { data: v } = await supabase.from("contract_versions").select("*").eq("contract_id", id).order("version", { ascending: false });
     setVersions(v ?? []);
@@ -189,11 +189,21 @@ export default function ContractDetail() {
       </Link>
 
       <div className="flex items-start justify-between gap-4">
-        <div>
+        <div className="space-y-2">
           <h1 className="text-2xl font-bold flex items-center gap-2"><FileText className="w-6 h-6" /> {contract.title}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {contract.departments?.name || "未指定部门"} · v{contract.current_version} · {new Date(contract.created_at).toLocaleString()}
+          <p className="text-sm text-muted-foreground">
+            {contract.department_name || "未指定部门"} · {contract.contract_type || "未分类"} · v{contract.current_version} · {new Date(contract.created_at).toLocaleString()}
           </p>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-muted-foreground max-w-xl">
+            {contract.party_a_name && <div>甲方：<span className="text-foreground">{contract.party_a_name}</span></div>}
+            {contract.party_b_name && <div>乙方：<span className="text-foreground">{contract.party_b_name}</span></div>}
+            {contract.currency && <div>币种：<span className="text-foreground">{contract.currency}</span></div>}
+            {(contract.start_date || contract.end_date) && <div>期限：<span className="text-foreground">{contract.start_date || "?"} ~ {contract.end_date || "?"}</span></div>}
+            {contract.counterparty_contact_name && <div>对方联系人：<span className="text-foreground">{contract.counterparty_contact_name}</span></div>}
+            {contract.counterparty_contact_phone && <div>联系电话：<span className="text-foreground">{contract.counterparty_contact_phone}</span></div>}
+            {contract.our_bank_account && <div className="col-span-2">我方账户：<span className="text-foreground whitespace-pre-wrap">{contract.our_bank_account}</span></div>}
+            {contract.counterparty_bank_account && <div className="col-span-2">对方账户：<span className="text-foreground whitespace-pre-wrap">{contract.counterparty_bank_account}</span></div>}
+          </div>
         </div>
         <Badge>{statusLabel[status]}</Badge>
       </div>
