@@ -14,13 +14,6 @@ import { LayoutDashboard, LogIn } from "lucide-react";
 
 type PageState = "upload" | "reviewing" | "result";
 
-interface ReviewConfig {
-  stance: string;
-  negotiationPosition: string;
-  companyName: string;
-  customRules: string;
-}
-
 const Index = () => {
   const [pageState, setPageState] = useState<PageState>("upload");
   const [review, setReview] = useState<ContractReview | null>(null);
