@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ContractUpload from "@/components/contract/ContractUpload";
+import ContractUpload, { type ReviewConfig } from "@/components/contract/ContractUpload";
 import ReviewProgress from "@/components/contract/ReviewProgress";
 import ReviewResult from "@/components/contract/ReviewResult";
 import { ContractReview } from "@/types/contract";
@@ -13,13 +13,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { LayoutDashboard, LogIn } from "lucide-react";
 
 type PageState = "upload" | "reviewing" | "result";
-
-interface ReviewConfig {
-  stance: string;
-  negotiationPosition: string;
-  companyName: string;
-  customRules: string;
-}
 
 const Index = () => {
   const [pageState, setPageState] = useState<PageState>("upload");
